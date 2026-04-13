@@ -222,3 +222,90 @@ Promise.resolve().then(() => console.log("promise"));
 setTimeout(() => console.log("setTimeout"), 0);
 
 setImmediate(() => console.log("setImmediate"));
+
+## creating server using http core module of node 
+
+
+
+## mongoDB basics
+
+
+## learing express 
+ - creating server using express
+ - creating routes via .use() 
+ - line order of the code really matters (got knowledge about routes and how it works )
+ - requesting through postman learnt about postman
+ ## query parameters in the url (req.query)
+          // URL: /search?name=xyz
+          app.get('/search', (req, res) => {
+              res.send(req.query.name);
+          });
+
+  ## Multiple Dynamic Parameters
+
+
+
+ app.get('/hello/:username/:age', (req, res) => {
+    const { username, age } = req.params;
+    res.send(`Hello ${username}, age ${age}`);
+});
+
+
+
+
+## What is next()?
+
+- next() passes control to the next middleware in the stack
+
+app.use('/test',
+  (req, res, next) => {
+    console.log("First middleware");
+    next();
+  },
+  (req, res) => {
+    console.log("Second middleware");
+    res.send("Test route working");
+  }
+);
+
+## error handling
+Important Rule
+
+👉 Only ONE response should be sent per request
+
+❌ Wrong:
+
+next();
+res.send("Hello");
+
+👉 This can cause:
+
+Error: Cannot set headers after they are sent
+🔥 Route Matching Order
+
+Express processes routes from top to bottom
+
+app.use('/test', ...);
+app.use('/', ...);
+❗ Special Case: / Route
+app.use('/', (req, res) => {
+    res.send("Welcome");
+});
+
+👉 / matches ALL routes:
+
+/test
+/hello
+/anything
+🧪 Example
+app.use('/test', (req, res, next) => {
+    next();
+});
+
+app.use('/', (req, res) => {
+    res.send("Welcome");
+});
+
+👉 Visiting /test will output:
+
+Welcome
