@@ -28,7 +28,7 @@ app.use('/test',(req, res ,next) =>{
 },(req,res,next) =>{
     //this is the second callback function for /test route, it will be executed after the first callback function
     console.log("this is the second callback function for /test route"); 
-    next();
+   
      
 
 });
