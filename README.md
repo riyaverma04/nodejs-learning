@@ -309,3 +309,149 @@ app.use('/', (req, res) => {
 👉 Visiting /test will output:
 
 Welcome
+
+
+
+##  What is Middleware?
+
+- Middleware is a function that runs between the request and the response. Because in real applications, every request needs common work before sending a response. 
+- middleWare helps in 
+ - authentication
+ - logging
+ - validation
+ - clean code 
+
+
+ ## What is Error Handling Middleware?
+  - It is a special type of middleware used to handle errors in your app. (err, req, res, next)
+
+
+---
+
+## Database , mongoose, schema , models
+
+
+##  What I Learned
+
+### 1. MongoDB Connection (Mongoose)
+
+```js
+const mongoose = require("mongoose");
+
+const connectDB = async () => {
+  await mongoose.connect("your_connection_string", {
+    dbName: "myDatabase"
+  });
+};
+
+module.exports = connectDB;
+```
+---
+
+### 2. Creating Routes
+
+```js
+app.post("/user/signup", (req, res) => {
+  res.send("Signup working");
+});
+```
+
+---
+
+
+
+
+
+### 3. Creating Mongoose Model
+
+```js
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  firstName: String,
+  lastName: String,
+  email: String,
+  password: String,
+  gender: String,
+  age: Number
+});
+
+module.exports = mongoose.model("UserInfo", userSchema);
+```
+
+---
+
+### 4. Saving Data to Database
+
+```js
+app.post("/user/signup", async (req, res) => {
+  try {
+    const newUser = new UserInfo(req.body);
+    const savedUser = await newUser.save();
+
+    res.status(201).json(savedUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+```
+---
+
+
+### 5. Handling Request Data
+
+```js
+app.post("/user/signup", (req, res) => {
+  console.log(req.body);
+});
+```
+
+---
+
+
+### 6. What is `express.json()`
+- Parses incoming JSON data
+- Makes data available in `req.body`
+
+```js
+app.use(express.json());
+
+app.post("/test", (req, res) => {
+  console.log(req.body);
+  res.send("Data received");
+});
+```
+
+---
+
+
+### 7. Common Mistakes I Faced
+- Forgot to import model
+- Wrong file path
+- Missing `express.json()`
+- Server not restarted
+- Wrong HTTP method (GET vs POST)
+
+---
+
+### 8. Testing API (Postman)
+
+**POST** `http://localhost:5000/user/signup`
+
+```json
+{
+  "firstName": "riya",
+  "lastName": "Verma",
+  "email": "riya@gmail.com",
+  "password": "123456",
+  "gender": "female",
+  "age": 22
+}
+```
+
+---
+
+
+
+

@@ -1,4 +1,7 @@
+const connectDB = require('./config/mongoose');
 const express = require('express');
+const UserInfo = require('./models/useInfo');
+
 
 const app = express();
 //this .use let all kind of request to be handled by the callback function, it can be get, post,put, delete,patch, optons, head, trace, connect, all    
@@ -18,26 +21,66 @@ const app = express();
 //     res.send("this is the second callback function");
 // })
 
-app.use('/test',(req, res ,next) =>{
-    //route handler for /test route
-    next();
-    res.send("test server is working fine");
-    //to send the response from second callback function we have next parameter in the first callback function, we can call next() to move to the second callback function
-    //but remember that we can only send one response for one request, so if we send response in the first callback function then we cannot send response in the second callback function, it will give us an error, so we have to use next() to move to the second callback function without sending response in the first callback function
+// app.use('/test',(req, res ,next) =>{
+//     //route handler for /test route
+//     next();
+//     res.send("test server is working fine");
+//     //to send the response from second callback function we have next parameter in the first callback function, we can call next() to move to the second callback function
+//     //but remember that we can only send one response for one request, so if we send response in the first callback function then we cannot send response in the second callback function, it will give us an error, so we have to use next() to move to the second callback function without sending response in the first callback function
     
-},(req,res,next) =>{
-    //this is the second callback function for /test route, it will be executed after the first callback function
-    console.log("this is the second callback function for /test route"); 
+// },(req,res,next) =>{
+//     //this is the second callback function for /test route, it will be executed after the first callback function
+//     console.log("this is the second callback function for /test route"); 
    
      
 
+// });
+
+// app.use('/hello',(req, res) =>{
+
+//     res.send("welcome to express server");
+// })
+
+
+// middleware to parse JSON
+app.use(express.json());
+
+
+
+app.post("/user/signup",  (req, res) => {
+    console.log(req.body);
+    //  res.send("user signup route is working fine");
+
+    // creating a new instance of UserInfo model 
+    const newUser = new UserInfo({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        password: req.body.password,
+        gender: req.body.gender,
+        age: req.body.age
+    });
+      newUser.save().then((savedUser) => {
+        res.status(201).json(savedUser);
+      }).catch((err) => {
+        res.status(500).json({ error: "Error saving user to the database" });
+      });   
 });
 
-app.use('/hello',(req, res) =>{
 
-    res.send("welcome to express server");
+
+
+
+
+
+connectDB().then(()=>{
+    console.log("connected to the database successfully");
+    app.listen(5000, ()=>{
+    console.log("port is successfully listening at 5000 port.")
+})
+}).catch((err)=>{
+    console.log("error while connecting to the database", err);
 })
 
-app.listen(3000, ()=>{
-    console.log("port is successfully listening at 3000 port.")
-})
+
+
