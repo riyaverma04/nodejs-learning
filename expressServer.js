@@ -63,7 +63,7 @@ app.post("/user/signup",  (req, res) => {
       newUser.save().then((savedUser) => {
         res.status(201).json(savedUser);
       }).catch((err) => {
-        res.status(500).json({ error: "Error saving user to the database" });
+        res.status(500).json({ error: err.message });
       });   
 });
 
@@ -90,7 +90,7 @@ app.delete("/user/delete/:id", async (req, res) =>{
 app.patch('/user/update/:id',async (req, res)=>{
     const userId = req.params.id;
     try{
-        const updatedUser = await UserInfo.findByIdAndUpdate(userId,req.body,{ new: true });
+        const updatedUser = await UserInfo.findByIdAndUpdate(userId,req.body,{ new: true ,runValidators: true });
          if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
     }
@@ -108,10 +108,10 @@ app.patch('/user/update/:id',async (req, res)=>{
 
 //get user 
 
-app.get('/user/:id', async (req, res)=>{
-    const userId = req.params.id;
+app.get('/user', async (req, res)=>{
+    // const userId = req.params.id;
     try{
-        const user = await UserInfo.findById({_id:userId});
+        const user = await UserInfo.find({});
         if(!user){
             return res.status(404).json({"message":"User not found"});  
         }
