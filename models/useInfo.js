@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 
 const {Schema} = mongoose;
@@ -10,6 +11,11 @@ const userSChema = new Schema({
         minlength: [3, "First name must be at least 3 characters long"],
         maxlength:[15,"Password must be at most 15 characters long"],
         trim: true,
+        validate(value){
+            if(!validator.isAlpha(value)){
+                throw new Error("Name can't contain a number.")
+            }
+        }
         
     },
     lastName:{
@@ -23,6 +29,11 @@ const userSChema = new Schema({
         unique: true,
         trim: true,
         lowercase: true,
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Invalid email address.")
+            }
+        }
         
     },
 

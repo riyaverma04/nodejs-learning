@@ -90,6 +90,15 @@ app.delete("/user/delete/:id", async (req, res) =>{
 app.patch('/user/update/:id',async (req, res)=>{
     const userId = req.params.id;
     try{
+
+        //we want user to update only few fields that need to be restricted
+        const ALLOW_UPDATE = ["passward", "gender", "firstName", "lastName"];
+        const isAllowUpdate = Object.keys(req.body).every((k)=>{
+            ALLOW_UPDATE.includes(k);
+        });
+        if(!isAllowUpdate){
+            throw new Error("update is not valid");
+        }
         const updatedUser = await UserInfo.findByIdAndUpdate(userId,req.body,{ new: true ,runValidators: true });
          if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
