@@ -68,6 +68,60 @@ app.post("/user/signup",  (req, res) => {
 });
 
 
+//delete user
+
+app.delete("/user/delete/:id", async (req, res) =>{
+    const userId = req.params.id;
+    try{
+        const deletedUser = await UserInfo.findByIdAndDelete(userId);
+        res.status(200).json(deletedUser);
+
+
+    }catch(err){
+        res.status(500).send(err);
+    }
+})
+
+
+
+
+//update user
+
+app.patch('/user/update/:id',async (req, res)=>{
+    const userId = req.params.id;
+    try{
+        const updatedUser = await UserInfo.findByIdAndUpdate(userId,req.body,{ new: true });
+         if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+    }
+        res.status(200).json(updatedUser);
+    }catch(err){
+        res.status(500).send(err.message);
+    }
+
+
+})
+
+
+
+
+
+//get user 
+
+app.get('/user/:id', async (req, res)=>{
+    const userId = req.params.id;
+    try{
+        const user = await UserInfo.findById({_id:userId});
+        if(!user){
+            return res.status(404).json({"message":"User not found"});  
+        }
+        res.status(200).send(user);
+    }catch(err){
+        res.status(500).send(err.message);
+    }
+})
+
+
 
 
 
