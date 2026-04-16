@@ -41,7 +41,7 @@ const userSChema = new Schema({
         type: String,
         required: true, 
         minlength:[8,"Password must be at least 8 characters long"],
-        maxlength:[15,"Password must be at most 15 characters long"]
+    
     },
     gender:{
         type: String,

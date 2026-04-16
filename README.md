@@ -452,6 +452,23 @@ app.post("/test", (req, res) => {
 
 ---
 
+## Data sanitization in shema or using validator library
+ - npm i validator
+ - require("validator")
+ - validate.isEmail()
+ - validate.isStrongPassword();
+ - validate.isUrl();
+ visit : https://www.npmjs.com/package/validator ( list of the validators)
+
+---
+
+##  encrypting password using bcrypt
+ - npm install bcrypt 
+ - using bcrypt.hash(inputPassword, salt);
+
+## comparing password 
+ - bcrypt.compare()
+
 
 
 

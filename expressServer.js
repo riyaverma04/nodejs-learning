@@ -1,6 +1,9 @@
 const connectDB = require('./config/mongoose');
 const express = require('express');
 const UserInfo = require('./models/useInfo');
+const { validateSignUpData, validateLoginData } = require('./utils/validation');
+const bcrypt = require('bcrypt')
+const validator = require('validator')
 
 
 const app = express();
@@ -47,25 +50,75 @@ app.use(express.json());
 
 
 
-app.post("/user/signup",  (req, res) => {
+app.post("/user/signup", async (req, res) => {
     console.log(req.body);
     //  res.send("user signup route is working fine");
-
+   try{
+     validateSignUpData(req);
+     
+    const userPassword = req.body.password;
+    if(!userPassword){
+        throw new Error("please enter password");
+    }
     // creating a new instance of UserInfo model 
+    const bcryptPassword = await bcrypt.hash(userPassword, 10);
+    console.log(bcryptPassword);
+     
     const newUser = new UserInfo({
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         email: req.body.email,
-        password: req.body.password,
+        password: bcryptPassword,
         gender: req.body.gender,
         age: req.body.age
     });
-      newUser.save().then((savedUser) => {
-        res.status(201).json(savedUser);
-      }).catch((err) => {
+     await newUser.save()
+     //showing the data with hashedpassword in not premitted so need to delete the password first then send it to the res but mongoose data is not a javascript object so we need to convert it to object thenonly we can delete the password from that object and send response 
+     const userResponse = newUser.toObject();
+     delete userResponse.password;
+       
+        res.status(201).json(userResponse);
+      }catch(err)  {
         res.status(500).json({ error: err.message });
-      });   
+      };   
 });
+
+
+app.post("/login",async (req, res)=>{
+    try{
+        const {email, password} = req.body;
+        //valid the input email
+        if(!validator.isEmail(email)){
+                throw new Error("Email is not valid!");
+        
+            }
+
+        //find the input email present in db or not
+        const userPresent = await UserInfo.findOne({email});
+        console.log(userPresent)
+        if(!userPresent){
+            throw new Error("This email is not register signup first");
+        }
+        console.log(password, userPresent.password)
+
+        //passoword compare
+        const isPasswordValid = await  bcrypt.compare(password, userPresent.password);
+
+        if(!isPasswordValid){
+            throw new Error("password is not valid");
+        }
+        else{
+            res.status(200).send("user login successfully")
+        }
+
+        
+
+    }catch(err){
+        res.status(500).send("Error"+ err.message);
+
+    }
+
+})
 
 
 //delete user
