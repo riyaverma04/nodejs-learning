@@ -4,6 +4,8 @@ const UserInfo = require('./models/useInfo');
 const { validateSignUpData, validateLoginData } = require('./utils/validation');
 const bcrypt = require('bcrypt')
 const validator = require('validator')
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 
 
 const app = express();
@@ -47,6 +49,7 @@ const app = express();
 
 // middleware to parse JSON
 app.use(express.json());
+app.use(cookieParser());
 
 
 
@@ -95,6 +98,7 @@ app.post("/login",async (req, res)=>{
 
         //find the input email present in db or not
         const userPresent = await UserInfo.findOne({email});
+        const {_id } = userPresent;
         console.log(userPresent)
         if(!userPresent){
             throw new Error("This email is not register signup first");
@@ -103,11 +107,16 @@ app.post("/login",async (req, res)=>{
 
         //passoword compare
         const isPasswordValid = await  bcrypt.compare(password, userPresent.password);
+        //geneate token from jwt 
+        const token =  await jwt.sign({_id}, "heyDeveloper@967$6738", {expiresIn: "1h"});
 
         if(!isPasswordValid){
             throw new Error("password is not valid");
         }
         else{
+            //add the token to the cookie and send respoonse to the client
+            res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "strict" });
+            console.log(req.cookies);
             res.status(200).send("user login successfully")
         }
 
@@ -170,10 +179,19 @@ app.patch('/user/update/:id',async (req, res)=>{
 
 //get user 
 
-app.get('/user', async (req, res)=>{
+app.get('/profile', async (req, res)=>{
     // const userId = req.params.id;
     try{
-        const user = await UserInfo.find({});
+        // const user = await UserInfo.find({});
+        //verify the token from the cookie and get the user id from the token
+        const decodedToken = await jwt.verify(req.cookies.token, "heyDeveloper@967$6738");
+        if(!decodedToken){
+            throw new Error("Invalid token");
+        }
+        console.log(decodedToken);
+        const profileId = decodedToken._id;
+        const user = await UserInfo.findById(profileId);
+
         if(!user){
             return res.status(404).json({"message":"User not found"});  
         }
