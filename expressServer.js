@@ -1,12 +1,12 @@
 const connectDB = require('./config/mongoose');
 const express = require('express');
-const UserInfo = require('./models/useInfo');
+const UserInfo = require('./models/userInfo');
 const { validateSignUpData, validateLoginData } = require('./utils/validation');
 const bcrypt = require('bcrypt')
 const validator = require('validator')
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
-
+const {authUser} = require('./middleware/auth');
 
 const app = express();
 //this .use let all kind of request to be handled by the callback function, it can be get, post,put, delete,patch, optons, head, trace, connect, all    
@@ -108,14 +108,14 @@ app.post("/login",async (req, res)=>{
         //passoword compare
         const isPasswordValid = await  bcrypt.compare(password, userPresent.password);
         //geneate token from jwt 
-        const token =  await jwt.sign({_id}, "heyDeveloper@967$6738", {expiresIn: "1h"});
+        const token =  await jwt.sign({_id}, "heyDeveloper@967$6738", {expiresIn: "1d"});
 
         if(!isPasswordValid){
             throw new Error("password is not valid");
         }
         else{
             //add the token to the cookie and send respoonse to the client
-            res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "strict" });
+            res.cookie("token", token,{expires:new Date(Date.now() + 24 * 60 *60 *1000 )}, { httpOnly: true, secure: true, sameSite: "strict" });
             console.log(req.cookies);
             res.status(200).send("user login successfully")
         }
@@ -132,9 +132,12 @@ app.post("/login",async (req, res)=>{
 
 //delete user
 
-app.delete("/user/delete/:id", async (req, res) =>{
+app.delete("/user/delete/:id", authUser,async (req, res) =>{
     const userId = req.params.id;
     try{
+        if(req.user._id.toString() !== userId){
+            return res.status(403).json({ message: "You are not authorized to delete this user." });
+        }
         const deletedUser = await UserInfo.findByIdAndDelete(userId);
         res.status(200).json(deletedUser);
 
@@ -179,22 +182,23 @@ app.patch('/user/update/:id',async (req, res)=>{
 
 //get user 
 
-app.get('/profile', async (req, res)=>{
+app.get('/profile',authUser, async (req, res)=>{
     // const userId = req.params.id;
     try{
         // const user = await UserInfo.find({});
         //verify the token from the cookie and get the user id from the token
-        const decodedToken = await jwt.verify(req.cookies.token, "heyDeveloper@967$6738");
-        if(!decodedToken){
-            throw new Error("Invalid token");
-        }
-        console.log(decodedToken);
-        const profileId = decodedToken._id;
-        const user = await UserInfo.findById(profileId);
+        // const decodedToken = await jwt.verify(req.cookies.token, "heyDeveloper@967$6738");
+        // if(!decodedToken){
+        //     throw new Error("Invalid token");
+        // }
+        // console.log(decodedToken);
+        // const profileId = decodedToken._id;
+        // const user = await UserInfo.findById(profileId);
 
-        if(!user){
-            return res.status(404).json({"message":"User not found"});  
-        }
+        // if(!user){
+        //     return res.status(404).json({"message":"User not found"});  
+        // }
+        const user = req.user;
         res.status(200).send(user);
     }catch(err){
         res.status(500).send(err.message);
