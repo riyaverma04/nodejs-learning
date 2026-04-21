@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
 
 const {Schema} = mongoose;
@@ -65,4 +67,21 @@ const userSChema = new Schema({
     }
     
 },{timestamps: true})
+
+
+// attaching a method to every user document. this method will generate a jwt token for the user when they login and we can use this token to authenticate the user in the future requests. 
+userSChema.methods.getJwt = async function(){
+    // this Refers to the current user instance (the logged-in user).
+    const user = this;
+    const token = await jwt.sign({_id: user._id}, "heyDeveloper@967$6738", {expiresIn: "1d"});
+    return token;
+}
+
+
+
+userSChema.methods.toValidatePassword = async function(password){
+    const user = this;
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    return isPasswordValid;
+}
  module.exports = mongoose.model("UserInfo", userSChema);

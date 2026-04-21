@@ -98,7 +98,7 @@ app.post("/login",async (req, res)=>{
 
         //find the input email present in db or not
         const userPresent = await UserInfo.findOne({email});
-        const {_id } = userPresent;
+        // const {_id } = userPresent;
         console.log(userPresent)
         if(!userPresent){
             throw new Error("This email is not register signup first");
@@ -106,9 +106,9 @@ app.post("/login",async (req, res)=>{
         console.log(password, userPresent.password)
 
         //passoword compare
-        const isPasswordValid = await  bcrypt.compare(password, userPresent.password);
+        const isPasswordValid = await  userPresent.toValidatePassword(password);
         //geneate token from jwt 
-        const token =  await jwt.sign({_id}, "heyDeveloper@967$6738", {expiresIn: "1d"});
+        const token =  await userPresent.getJwt();
 
         if(!isPasswordValid){
             throw new Error("password is not valid");
